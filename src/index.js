@@ -6,9 +6,10 @@ import dotenv from "dotenv"
 dotenv.config()
 const app = express()
 app.use(cors());
+const url = process.env.Front_End_URL
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173", url
   })
 );
 app.use(express.json());
@@ -19,7 +20,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/api/v1",Router)
+app.use("/api/v1", Router)
 
 connectionMongoDB();
 const port = process.env.PORT || 5111;
