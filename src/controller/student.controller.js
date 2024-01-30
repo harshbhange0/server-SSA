@@ -1,6 +1,6 @@
 import zod from "zod"
 import jwt from "jsonwebtoken"
-import User from "../models/User.models.js"
+import Student from "../models/Student.models.js"
 import hashingPassword from "../utils/HashingPassword.js"
 import generateRefreshToken from "../utils/GenerateRefreshToken.js"
 
@@ -17,24 +17,24 @@ const register = async (req, res) => {
         res.status(401).send({ msg: "user credential invalid" })
     }
     else {
-        const userAlreadyExists = await User.findOne({
+        const studentAlreadyExists = await Student.findOne({
             email: req.body.email
-        }) // check user is already exists 
-        if (!userAlreadyExists) {
+        }) // check student is already exists 
+        if (!studentAlreadyExists) {
             try {
                 const JWT_S = process.env.JWT_SECRET
                 const hashedPassword = hashingPassword(req.body.password) // hashing password and saving in to db
 
-                const user = await User.create({
+                const student = await Student.create({
                     email: req.body.email,
                     password: hashedPassword,
                     firstName: req.body.firstName,
                     lastName: req.body.lastName,
 
                 })
-                const refreshToken = generateRefreshToken(user)
+                const refreshToken = generateRefreshToken(student)
                 try {
-                    const rs = await user.updateOne({
+                    const rs = await student.updateOne({
                         refreshToken: refreshToken
                     })
                 } catch (error) {
@@ -44,26 +44,26 @@ const register = async (req, res) => {
                     })
                 }
 
-                const userId = user._id
-                //sand user auth token
+                const studentId = student._id
+                //sand student auth token
                 const token = jwt.sign({
-                    userId,
+                    studentId,
                     email: req.body.email,
                 }, JWT_S)
                 return res.status(200).send({
-                    msg: "user created successfully ",
+                    msg: "student created successfully ",
                     token: token,
                     refreshToken: refreshToken
                 })
             } catch (error) {
                 console.log(error);
                 res.status(400).send({
-                    msg: "error in creating user"
+                    msg: "error in creating student"
                 })
             }
         }
         res.status(201).send({
-            msg: "user Already Exists"
+            msg: "student Already Exists"
         })
     }
 }
@@ -75,30 +75,30 @@ const zodLoginBody = zod.object({
 
 const login = async (req, res) => {
     const { success } = zodLoginBody.safeParse(req.body)
-    if (!success) { // check if user response is valid
-        res.status(401).send({ msg: "user credential invalid" })
+    if (!success) { // check if student response is valid
+        res.status(401).send({ msg: "student credential invalid" })
     }
     else {
         const { email, password } = req.body
         try {
-            const user = await User.findOne({
+            const student = await Student.findOne({
                 email: email
-            }) // check user is already exists 
-            if (!user) {
+            }) // check student is already exists 
+            if (!student) {
                 res.status(404).send({
-                    msg: "user not found"
+                    msg: "student not found"
                 })
             }
             const JWT_S = process.env.JWT_SECRET
-            const unHashedPassword = jwt.verify(user.password, JWT_S) // unhashed password from db
+            const unHashedPassword = jwt.verify(student.password, JWT_S) // unhashed password from db
             if (!(unHashedPassword.password === password)) { // check if unhashde password and res body password is same 
                 res.status(401).send({
-                    msg: "user credential invalid"
+                    msg: "student credential invalid"
                 })
             } else {
-                const refreshToken = generateRefreshToken(user)
+                const refreshToken = generateRefreshToken(student)
                 try {
-                    const re = await User.updateOne({
+                    const re = await Student.updateOne({
                         refreshToken: refreshToken
                     })
                 } catch (error) {
@@ -108,7 +108,7 @@ const login = async (req, res) => {
                     })
                 }
                 res.status(200).send({
-                    msg: "user logged in successfully",
+                    msg: "student logged in successfully",
                     email: email,
                     refreshToken: refreshToken
                 })
@@ -128,11 +128,11 @@ const authRefreshToken = (req, res) => {
         const authRToken = jwt.verify(refreshToken, JWT_R_S)
         console.log(authRToken);
         res.send({
-            userValid: true
+            studentValid: true
         })
     } catch (error) {
         res.send({
-            userValid: false
+            studentValid: false
         })
 
     }

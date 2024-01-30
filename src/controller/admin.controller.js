@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import Admin from "../models/Admin.models.js"
 import hashingPassword from "../utils/HashingPassword.js"
 import generateRefreshToken from "../utils/GenerateRefreshToken.js"
+import Student from "../models/Student.models.js"
 
 const zodRegBody = zod.object({
     email: zod.string().email(),
@@ -138,8 +139,46 @@ const authRefreshToken = (req, res) => {
     }
 
 }
+
+const getAllStudents = async (req, res) => {
+    try {
+        const students = await Student.find()
+        res.status(200).send({
+            data: students
+        })
+    } catch (error) {
+        console.log(error);
+        res.send({
+            msg: "some thing went wrong in finding students"
+        })
+    }
+}
+const getOneStudent = async (req, res) => {
+    try {
+        const email = req.params.email
+        if (!email) {
+            res.status(404).send({
+                msg: "email not found or invalid"
+            })
+        } else {
+            const student = await Student.findOne({
+                email: email
+            })
+            res.status(200).send({
+                data: student
+            })
+        }
+    } catch (error) {
+        console.log(error);
+        res.send({
+            msg: "some thing went wrong in finding student"
+        })
+    }
+}
 export {
     register,
     login,
-    authRefreshToken
+    authRefreshToken,
+    getAllStudents,
+    getOneStudent
 }
