@@ -5,6 +5,11 @@ const authMiddleware = async (req, res, next) => {
     try {
         const JWT_S = process.env.JWT_SECRET
         const token = req.headers.token
+        if (!token) {
+            res.status(404).send({
+                msg: "token must be provided"
+            })
+        }
         const decodedToken = jwt.verify(token, JWT_S)
         if (!decodedToken) {
             res.status(401).send({
